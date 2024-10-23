@@ -47,4 +47,108 @@
       <div class="form-group">
         <label for="dose">Dopamin Dozu (mcg/kg/dk):</label>
         <input type="range" class="form-control-range" id="dose" min="2" max="20" value="2" oninput="updateDoseColor()" required>
-        <small>Seçilen Doz: <span id
+        <small>Seçilen Doz: <span id="doseValue">2</span> mcg/kg/dk</small>
+      </div>
+      <div class="form-group">
+        <label>Kullanılan Mayii Miktarı (NaCl):</label>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="fluidVolume" id="fluidVolume100" value="100" checked required>
+          <label class="form-check-label" for="fluidVolume100">
+            100cc NaCl
+          </label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="fluidVolume" id="fluidVolume500" value="500" required>
+          <label class="form-check-label" for="fluidVolume500">
+            500cc NaCl
+          </label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="fluidVolume" id="fluidVolume1000" value="1000" required>
+          <label class="form-check-label" for="fluidVolume1000">
+            1000cc NaCl
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="ampoules">Kullanılacak Ampul Sayısı:</label>
+        <input type="number" class="form-control" id="ampoules" placeholder="Sıvıya katılacak ampul sayısını girin" value="1" min="1" required oninput="updateFluidVolume()">
+      </div>
+      <button type="button" class="btn btn-primary btn-block" onclick="calculateInfusion()">Hesapla</button>
+      <button type="reset" class="btn btn-secondary btn-block" onclick="resetForm()">Formu Sıfırla</button>
+    </form>
+    <hr>
+    <h4>Sonuçlar:</h4>
+    <p id="resultCcHour">İnfüzyon Hızı: <strong>0 cc/saat</strong></p>
+    <p id="resultDropsMin">İnfüzyon Hızı: <strong>0 damla/dk</strong></p>
+  </div>
+
+  <script>
+    function updateDoseColor() {
+      const dose = document.getElementById('dose').value;
+      const doseValueSpan = document.getElementById('doseValue');
+      doseValueSpan.innerText = dose;
+      
+      let backgroundColor;
+      if (dose <= 5) {
+        backgroundColor = 'green';
+      } else if (dose > 5 && dose <= 10) {
+        backgroundColor = 'yellow';
+      } else if (dose > 10 && dose <= 15) {
+        backgroundColor = 'orange';
+      } else {
+        backgroundColor = 'red';
+      }
+
+      document.getElementById('dose').style.background = backgroundColor;
+    }
+
+    function updateFluidVolume() {
+      const ampoules = parseInt(document.getElementById('ampoules').value);
+      const fluidVolume = document.querySelector('input[name="fluidVolume"]:checked').value;
+      const totalVolume = parseInt(fluidVolume) + (ampoules * 5); // Her ampul için 5 ml ekle
+
+      // Seçilen sıvı miktarını güncelle
+      document.querySelector(`label[for="fluidVolume${fluidVolume}"]`).innerText = `${fluidVolume}cc NaCl + ${ampoules * 5}ml (Toplam: ${totalVolume} ml)`;
+    }
+
+    function calculateInfusion() {
+      const weight = parseFloat(document.getElementById('weight').value);
+      const dose = parseFloat(document.getElementById('dose').value);
+      let fluidVolume = parseFloat(document.querySelector('input[name="fluidVolume"]:checked').value);
+      const ampoules = parseFloat(document.getElementById('ampoules').value);
+
+      fluidVolume += ampoules * 5; // Ampul sayısına göre sıvı miktarını artır
+
+      const dopamineConcentration = 200; // 1 ampul dopamin 200 mg / 5 ml
+      const ampouleVolume = 5; // 1 ampul 5 ml
+      const dopamineInMgPerMl = (dopamineConcentration * ampoules) / ampouleVolume; // Ampul sayısına göre dopaminin mg/ml oranı
+      
+      // Dozu mcg/dk'ya çevir
+      const doseMcgMin = dose * weight; // mcg/kg/dk * kilo = toplam mcg/dk
+      const doseMgMin = doseMcgMin / 1000; // mcg'yi mg'ye çevir
+
+      // NaCl başına mg dopamin miktarı
+      const dopaminePerMlNaCl = dopamineInMgPerMl / fluidVolume;
+
+      // cc/dk cinsinden infüzyon hızı
+      const ccPerMin = doseMgMin / dopaminePerMlNaCl;
+
+      // cc/saat cinsinden infüzyon hızı (cc/dk * 60)
+      const ccPerHour = ccPerMin * 60;
+
+      // damla/dk cinsinden infüzyon hızı (1 cc = 20 damla)
+      const dropsPerMin = ccPerMin * 20;
+
+      // Sonuçları güncelle
+      document.getElementById('resultCcHour').innerHTML = `İnfüzyon Hızı: <strong>${ccPerHour.toFixed(2)} cc/saat</strong>`;
+      document.getElementById('resultDropsMin').innerHTML = `İnfüzyon Hızı: <strong>${dropsPerMin.toFixed(2)} damla/dk</strong>`;
+    }
+
+    function resetForm() {
+      document.getElementById('doseValue').innerText = '2'; // Başlangıç değeri olarak 2 göster
+      updateFluidVolume(); // Sıvı miktarını da sıfırlarken güncelle
+    }
+  </script>
+</body>
+</html>
