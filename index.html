@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
@@ -21,23 +21,35 @@
       </div>
       <div class="form-group">
         <label for="dose">Dopamin Dozu (mcg/kg/dk):</label>
-        <h5><i><small></small></i>Not: Dopamin dozu 2-20 mcg/kg/dk</small></i></h5>
-        <input type="number" class="form-control" id="dose" min="2" max="20" required>
+        <input type="range" class="form-control-range" id="dose" min="2" max="20" value="2" oninput="document.getElementById('doseValue').innerText = this.value" required>
+        <small>Seçilen Doz: <span id="doseValue">2</span> mcg/kg/dk</small>
       </div>
       <div class="form-group">
-        <label for="fluidVolume">Kullanılan Mayii Miktarı (NaCl):</label>
-        <select class="form-control" id="fluidVolume" required>
-          <option value="105">100cc NaCl (Toplam 105 ml)</option>
-          <option value="505">500cc NaCl (Toplam 505 ml)</option>
-          <option value="1005">1000cc NaCl (Toplam 1005 ml)</option>
-        </select>
+        <label>Kullanılan Mayii Miktarı (NaCl):</label>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="fluidVolume" id="fluidVolume100" value="105" required>
+          <label class="form-check-label" for="fluidVolume100">
+            100cc NaCl (Toplam 105 ml)
+          </label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="fluidVolume" id="fluidVolume500" value="505" required>
+          <label class="form-check-label" for="fluidVolume500">
+            500cc NaCl (Toplam 505 ml)
+          </label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="fluidVolume" id="fluidVolume1000" value="1005" required>
+          <label class="form-check-label" for="fluidVolume1000">
+            1000cc NaCl (Toplam 1005 ml)
+          </label>
+        </div>
       </div>
-      <button type="button" class="btn btn-primary" onclick="calculateInfusion()">Hesapla</button>
-      <button type="reset" class="btn btn-secondary" id="resetBtn">Sıfırla</button>
+      <button type="button" class="btn btn-primary btn-block" onclick="calculateInfusion()">Hesapla</button>
     </form>
     <hr>
     <h4>Sonuçlar:</h4>
-    <p id="resultCcMin">İnfüzyon Hızı: <strong>0 cc/dk</strong></p>
+    <p id="resultCcHour">İnfüzyon Hızı: <strong>0 cc/saat</strong></p>
     <p id="resultDropsMin">İnfüzyon Hızı: <strong>0 damla/dk</strong></p>
   </div>
 
@@ -45,7 +57,7 @@
     function calculateInfusion() {
       const weight = parseFloat(document.getElementById('weight').value);
       const dose = parseFloat(document.getElementById('dose').value);
-      const fluidVolume = parseFloat(document.getElementById('fluidVolume').value);
+      const fluidVolume = parseFloat(document.querySelector('input[name="fluidVolume"]:checked').value);
 
       const dopamineConcentration = 200; // 1 ampul dopamin 200 mg / 5 ml
       const ampouleVolume = 5; // 1 ampul 5 ml
@@ -61,11 +73,14 @@
       // cc/dk cinsinden infüzyon hızı
       const ccPerMin = doseMgMin / dopaminePerMlNaCl;
 
+      // cc/saat cinsinden infüzyon hızı (cc/dk * 60)
+      const ccPerHour = ccPerMin * 60;
+
       // damla/dk cinsinden infüzyon hızı (1 cc = 20 damla)
       const dropsPerMin = ccPerMin * 20;
 
       // Sonuçları güncelle
-      document.getElementById('resultCcMin').innerHTML = `İnfüzyon Hızı: <strong>${ccPerMin.toFixed(2)} cc/dk</strong>`;
+      document.getElementById('resultCcHour').innerHTML = `İnfüzyon Hızı: <strong>${ccPerHour.toFixed(2)} cc/saat</strong>`;
       document.getElementById('resultDropsMin').innerHTML = `İnfüzyon Hızı: <strong>${dropsPerMin.toFixed(2)} damla/dk</strong>`;
     }
   </script>
