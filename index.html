@@ -1,4 +1,4 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
@@ -8,6 +8,31 @@
   <style>
     body {
       padding: 20px;
+    }
+    #dose {
+      width: 100%;
+      appearance: none;
+      height: 8px;
+      border-radius: 5px;
+      background: linear-gradient(to right, green, yellow, orange, red);
+      outline: none;
+      opacity: 0.9;
+      transition: background 0.3s ease-in-out;
+    }
+    #dose::-webkit-slider-thumb {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: white;
+      cursor: pointer;
+    }
+    #dose::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: white;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -21,7 +46,7 @@
       </div>
       <div class="form-group">
         <label for="dose">Dopamin Dozu (mcg/kg/dk):</label>
-        <input type="range" class="form-control-range" id="dose" min="2" max="20" value="2" oninput="document.getElementById('doseValue').innerText = this.value" required>
+        <input type="range" class="form-control-range" id="dose" min="2" max="20" value="2" oninput="updateDoseColor()" required>
         <small>Seçilen Doz: <span id="doseValue">2</span> mcg/kg/dk</small>
       </div>
       <div class="form-group">
@@ -45,7 +70,12 @@
           </label>
         </div>
       </div>
+      <div class="form-group">
+        <label for="ampoules">Kullanılacak Ampul Sayısı:</label>
+        <input type="number" class="form-control" id="ampoules" value="1" min="1" required>
+      </div>
       <button type="button" class="btn btn-primary btn-block" onclick="calculateInfusion()">Hesapla</button>
+      <button type="reset" class="btn btn-secondary btn-block">Formu Sıfırla</button>
     </form>
     <hr>
     <h4>Sonuçlar:</h4>
@@ -54,14 +84,34 @@
   </div>
 
   <script>
+    function updateDoseColor() {
+      const dose = document.getElementById('dose').value;
+      const doseValueSpan = document.getElementById('doseValue');
+      doseValueSpan.innerText = dose;
+      
+      let backgroundColor;
+      if (dose <= 5) {
+        backgroundColor = 'green';
+      } else if (dose > 5 && dose <= 10) {
+        backgroundColor = 'yellow';
+      } else if (dose > 10 && dose <= 15) {
+        backgroundColor = 'orange';
+      } else {
+        backgroundColor = 'red';
+      }
+
+      document.getElementById('dose').style.background = backgroundColor;
+    }
+
     function calculateInfusion() {
       const weight = parseFloat(document.getElementById('weight').value);
       const dose = parseFloat(document.getElementById('dose').value);
       const fluidVolume = parseFloat(document.querySelector('input[name="fluidVolume"]:checked').value);
+      const ampoules = parseFloat(document.getElementById('ampoules').value);
 
       const dopamineConcentration = 200; // 1 ampul dopamin 200 mg / 5 ml
       const ampouleVolume = 5; // 1 ampul 5 ml
-      const dopamineInMgPerMl = dopamineConcentration / ampouleVolume; // Dopaminin mg/ml oranı
+      const dopamineInMgPerMl = (dopamineConcentration * ampoules) / ampouleVolume; // Ampul sayısına göre dopaminin mg/ml oranı
       
       // Dozu mcg/dk'ya çevir
       const doseMcgMin = dose * weight; // mcg/kg/dk * kilo = toplam mcg/dk
